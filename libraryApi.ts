@@ -6,6 +6,7 @@ import { GoogleGenAI } from '@google/genai';
 import { queryLlm, retryWithBackoff } from './llm';
 import { extractThemesPrompt } from './prompts';
 import { apiCache } from './utils/cache';
+import type { Node, OpenLibraryWork, OpenLibraryAuthor, BookData } from './types';
 
 const ai = new GoogleGenAI({
     apiKey: process.env.API_KEY
@@ -15,7 +16,7 @@ const ai = new GoogleGenAI({
 let lastApiCallTimestamp = 0;
 const API_CALL_INTERVAL = 200; // ms between calls (increased from 100 for safety)
 
-async function throttledFetch(url, options) {
+async function throttledFetch(url: string, options?: RequestInit): Promise<Response> {
     const now = Date.now();
     const timeSinceLastCall = now - lastApiCallTimestamp;
 
@@ -29,7 +30,7 @@ async function throttledFetch(url, options) {
 }
 
 // Centralized fetch helper using the new throttler with caching
-async function fetchOpenLibrary(path) {
+async function fetchOpenLibrary(path: string): Promise<any> {
     // Check cache first
     const cacheKey = `openlib:${path}`;
     const cached = apiCache.get(cacheKey);
@@ -70,10 +71,8 @@ async function fetchOpenLibrary(path) {
 
 /**
  * Searches Open Library to find the API key for a node that is missing one.
- * @param {object} node The node object ({ label, type }).
- * @returns {Promise<string|null>} The API key (e.g., /works/OL123W) or null.
  */
-export async function findApiKeyForNode(node) {
+export async function findApiKeyForNode(node: Pick<Node, 'label' | 'type'>): Promise<string | null> {
     try {
         let searchPath;
         if (node.type === 'book') {
@@ -102,10 +101,8 @@ export async function findApiKeyForNode(node) {
 /**
  * Ensures a book node has a cover image URL.
  * Fetches from Open Library if an API key is present.
- * @param {object} bookNode The book node object.
- * @returns {Promise<string|null>} The image URL or null.
  */
-export async function ensureBookImage(bookNode) {
+export async function ensureBookImage(bookNode: Pick<Node, 'imageUrl' | 'api_key' | 'label'>): Promise<string | null> {
     if (bookNode.imageUrl) {
         return bookNode.imageUrl;
     }
@@ -128,10 +125,8 @@ export async function ensureBookImage(bookNode) {
 /**
  * Ensures an author node has an image URL.
  * Fetches from Open Library if possible, otherwise returns null.
- * @param {object} authorNode The author node object.
- * @returns {Promise<string|null>} The image URL or null.
  */
-export async function ensureAuthorImage(authorNode) {
+export async function ensureAuthorImage(authorNode: Pick<Node, 'imageUrl' | 'api_key' | 'label'>): Promise<string | null> {
     if (authorNode.imageUrl) {
         return authorNode.imageUrl;
     }
@@ -154,11 +149,8 @@ export async function ensureAuthorImage(authorNode) {
 
 /**
  * Extracts themes from a given text using an LLM.
- * @param {string} nodeLabel The label of the node the text belongs to.
- * @param {string} text The text to analyze (e.g., description, bio).
- * @returns {Promise<string[]>} An array of theme labels.
  */
-async function getThemesFromText(nodeLabel, text) {
+async function getThemesFromText(nodeLabel: string, text: string): Promise<string[]> {
     if (!text || text.length < 50) return []; // Don't run on very short/irrelevant text
     try {
         const prompt = extractThemesPrompt(nodeLabel, text);
@@ -177,11 +169,8 @@ async function getThemesFromText(nodeLabel, text) {
 
 /**
  * Finds a single book for the book grid, prioritizing a good cover image.
- * @param {string} title The title of the book.
- * @param {string} author The author of the book (optional).
- * @returns {Promise<object|null>} A structured book object or null.
  */
-export async function findBookForGrid(title, author = '') {
+export async function findBookForGrid(title: string, author: string = ''): Promise<BookData | null> {
     try {
         let query;
         if (author) {
@@ -212,7 +201,7 @@ export async function findBookForGrid(title, author = '') {
 
 
 // A function to search for a book or author
-export async function searchLiterary(query) {
+export async function searchLiterary(query: string): Promise<any> {
     try {
         // Search for works (books) first, as it's a common query type
         const workData = await fetchOpenLibrary(`/search.json?q=${encodeURIComponent(query)}&limit=5&fields=key,title,author_name,author_key,first_publish_year,first_sentence,cover_i,description,subjects,series`);
@@ -245,7 +234,7 @@ export async function searchLiterary(query) {
 }
 
 // Helper to process a single book/work document from Open Library
-async function processOpenLibraryDoc(doc, isExpansion = false) {
+async function processOpenLibraryDoc(doc: any, isExpansion: boolean = false): Promise<any> {
     const nodes = [];
     const edges = [];
     
@@ -409,7 +398,7 @@ async function processOpenLibraryDoc(doc, isExpansion = false) {
 }
 
 // Helper to process an author and their works
-async function processAuthorAndWorks(authorDoc, works, isExpansion = false) {
+async function processAuthorAndWorks(authorDoc: any, works: any[], isExpansion: boolean = false): Promise<any> {
     const nodes = [];
     const edges = [];
     const authorName = authorDoc.name;
