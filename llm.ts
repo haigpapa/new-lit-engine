@@ -8,8 +8,9 @@
 /// <reference types="vite/client" />
 import type { LLMRequest, LLMResponse } from './types'
 
-// Backend API URL - defaults to local development, can be overridden for production
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Backend API URL - uses relative path in production, localhost in development
+const API_BASE_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? '' : 'http://localhost:3001');
 
 // Helper for retrying promises with exponential backoff
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
