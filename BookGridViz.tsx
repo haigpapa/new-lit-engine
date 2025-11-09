@@ -7,7 +7,7 @@ import c from 'clsx';
 import useStore from './store';
 import BookGridNode from './BookGridNode';
 
-const BookGridViz = () => {
+const BookGridViz: React.FC = () => {
     const slots = useStore(state => state.bookGrid.slots);
     const isSeeded = useStore(state => state.bookGrid.isSeeded);
     const isLoading = useStore(state => state.bookGrid.isLoading);
@@ -23,7 +23,7 @@ const BookGridViz = () => {
             </div>
         );
     }
-    
+
     return (
         <div className="book-grid-container">
             {isLoading && (

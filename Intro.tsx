@@ -6,7 +6,7 @@ import React from 'react';
 import c from 'clsx';
 import useStore from './store';
 
-const Intro = () => {
+const Intro: React.FC = () => {
   const loadingProgress = useStore(s => s.loadingProgress);
   const loadingMessage = useStore(s => s.loadingMessage);
   const isProcessing = !!loadingMessage;

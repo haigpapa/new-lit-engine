@@ -11,18 +11,29 @@ import LiteraryNode from './LiteraryNode'
 import {setSelectedNode} from './actions'
 import * as THREE from 'three'
 import { Physics } from '@react-three/rapier'
+import type { Node } from './types'
 
-const GraphEdge = ({ sourceId, targetId, livePositions, ...styleProps }) => {
-    const lineRef = useRef();
+interface GraphEdgeProps {
+  sourceId: string;
+  targetId: string;
+  livePositions: React.MutableRefObject<Record<string, THREE.Vector3>>;
+  color: string;
+  lineWidth: number;
+  transparent: boolean;
+  opacity: number;
+}
+
+const GraphEdge: React.FC<GraphEdgeProps> = ({ sourceId, targetId, livePositions, ...styleProps }) => {
+    const lineRef = useRef<any>(null);
     const { camera } = useThree();
     const { nodes } = useStore.getState(); // non-reactive read
     const sourceNode = nodes[sourceId];
     const targetNode = nodes[targetId];
 
-    const startVec = useMemo(() => new THREE.Vector3(), []);
-    const endVec = useMemo(() => new THREE.Vector3(), []);
-    const midVec = useMemo(() => new THREE.Vector3(), []);
-    
+    const startVec = useMemo<THREE.Vector3>(() => new THREE.Vector3(), []);
+    const endVec = useMemo<THREE.Vector3>(() => new THREE.Vector3(), []);
+    const midVec = useMemo<THREE.Vector3>(() => new THREE.Vector3(), []);
+
     useFrame(() => {
         if (!lineRef.current || !sourceNode || !targetNode || !livePositions.current) return;
 
@@ -36,11 +47,11 @@ const GraphEdge = ({ sourceId, targetId, livePositions, ...styleProps }) => {
 
         startVec.copy(sourcePos);
         endVec.copy(targetPos);
-        
-        const getNodeRadius = (node) => {
+
+        const getNodeRadius = (node: Node | undefined): number => {
             if (!node) return 0.5;
-            if (node.type === 'theme') return node.size;
-            const effectiveSize = node.size * 1.4;
+            if (node.type === 'theme') return node.size || 0.7;
+            const effectiveSize = (node.size || 0.7) * 1.4;
             if (node.type === 'author') return effectiveSize;
             if (node.type === 'book') {
                 const bookAspectRatio = 2/3;
@@ -48,7 +59,7 @@ const GraphEdge = ({ sourceId, targetId, livePositions, ...styleProps }) => {
                 const bookWidth = bookHeight * bookAspectRatio;
                 return Math.sqrt(Math.pow(bookWidth / 2, 2) + Math.pow(bookHeight / 2, 2)) * 0.8; // Use 80% of diagonal
             }
-            return node.size;
+            return node.size || 0.7;
         };
 
         const sourceRadius = getNodeRadius(sourceNode);
@@ -69,13 +80,13 @@ const GraphEdge = ({ sourceId, targetId, livePositions, ...styleProps }) => {
 
         const modifiedStart = startVec.clone().add(direction.clone().multiplyScalar(sourceRadius));
         const modifiedEnd = endVec.clone().sub(direction.clone().multiplyScalar(targetRadius));
-        
+
         midVec.lerpVectors(modifiedStart, modifiedEnd, 0.5);
         const perpendicular = new THREE.Vector3().crossVectors(direction, camera.position).normalize();
-        
+
         const arcAmount = length * 0.15;
         midVec.add(perpendicular.multiplyScalar(arcAmount));
-        
+
         lineRef.current.setPoints(modifiedStart, modifiedEnd, midVec);
     });
 
@@ -93,8 +104,8 @@ function SceneContent() {
   const connectionPath = useStore(s => s.connectionPath);
   const isTimelineActive = useStore(s => s.isTimelineActive);
   const timelineRange = useStore(s => s.timelineRange);
-  
-  const livePositionsRef = useRef({});
+
+  const livePositionsRef = useRef<Record<string, THREE.Vector3>>({});
 
   useEffect(() => {
     // Clear the refs when nodes change to avoid memory leaks
@@ -102,7 +113,7 @@ function SceneContent() {
   }, [nodes]);
 
   const {camera} = useThree()
-  const controlsRef = useRef()
+  const controlsRef = useRef<any>(null)
 
   const visibleNodes = useMemo(() => {
     return Object.values(nodes).filter(node => {
@@ -122,16 +133,16 @@ function SceneContent() {
   const visibleEdges = useMemo(() => {
     return edges.filter(edge => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target));
   }, [edges, visibleNodeIds]);
-  
+
   const connections = useMemo(() => {
-    const map = new Map();
+    const map = new Map<string, string[]>();
     Object.keys(nodes).forEach(id => map.set(id, []));
     edges.forEach(edge => {
         map.get(edge.source)?.push(edge.target);
         map.get(edge.target)?.push(edge.source);
     });
     return map;
-  }, [edges]);
+  }, [edges, nodes]);
 
   useEffect(() => {
     if (selectedNode && nodes[selectedNode] && !nodeFilters[nodes[selectedNode].type]) {
@@ -148,7 +159,7 @@ function SceneContent() {
       const node = nodes[selectedNode]
       const nodePos = node.position
       const targetNodeWorldVec = new THREE.Vector3(...nodePos)
-      
+
       const size = node.size || 0.7;
       const effectiveSize = size * (node.type === 'book' || node.type === 'author' ? 1.4 : 1);
       const cameraDistance = Math.max(effectiveSize * 6, 5);
@@ -157,9 +168,11 @@ function SceneContent() {
       const duration = 2.5;
       const ease = 'easeInOut'
 
+      // @ts-ignore - motion library type issue
       const currentControlsTarget = controls.target.clone()
+      // @ts-expect-error - motion library type mismatch
       animate(
-        t => {
+        (t: number) => {
           const newTarget = new THREE.Vector3().lerpVectors(
             currentControlsTarget,
             targetNodeWorldVec,
@@ -167,7 +180,7 @@ function SceneContent() {
           )
           controls.target.set(newTarget.x, newTarget.y, newTarget.z)
         },
-        {duration, ease}
+        {duration, ease: ease as any}
       )
 
       const offsetDirection = camera.position
@@ -179,10 +192,12 @@ function SceneContent() {
       const targetCameraPositionVec = targetNodeWorldVec
         .clone()
         .add(offsetDirection)
+      // @ts-ignore - motion library type issue
       const currentCameraPosition = camera.position.clone()
 
+      // @ts-expect-error - motion library type mismatch
       animate(
-        t => {
+        (t: number) => {
           const newPos = new THREE.Vector3().lerpVectors(
             currentCameraPosition,
             targetCameraPositionVec,
@@ -190,19 +205,21 @@ function SceneContent() {
           )
           camera.position.set(newPos.x, newPos.y, newPos.z)
         },
-        {duration, ease}
+        {duration, ease: ease as any}
       )
     } else if (resetCam) {
-      const targetCamPos = [0, 0, 50]
-      const targetControlsTarget = [0, 0, 0]
+      const targetCamPos: [number, number, number] = [0, 0, 50]
+      const targetControlsTarget: [number, number, number] = [0, 0, 0]
       const duration = 1.2
       const ease = 'easeInOut'
 
+      // @ts-ignore - motion library type issue
       const currentCamPos = camera.position.clone()
       const currentControlsTarget = controls.target.clone()
 
+      // @ts-expect-error - motion library type mismatch
       animate(
-        t => {
+        (t: number) => {
           const newPos = new THREE.Vector3().lerpVectors(
             currentCamPos,
             new THREE.Vector3(...targetCamPos),
@@ -216,9 +233,9 @@ function SceneContent() {
           )
           controls.target.set(newTarget.x, newTarget.y, newTarget.z)
         },
-        {duration, ease}
+        {duration, ease: ease as any}
       )
-      useStore.setState(state => {
+      const set = useStore.setState as any; set((state: any) => {
         state.resetCam = false
       })
     }
@@ -229,22 +246,22 @@ function SceneContent() {
       controlsRef.current.update()
     }
   })
-  
+
   const selectionActive = !!selectedNode;
   const pathActive = connectionPath.length > 0;
-  
+
   const pathNodeIds = useMemo(() => new Set(connectionPath), [connectionPath]);
   const pathEdgeIds = useMemo(() => {
-    const idSet = new Set();
+    const idSet = new Set<string>();
     for (let i = 0; i < connectionPath.length - 1; i++) {
         idSet.add(`${connectionPath[i]}->${connectionPath[i+1]}`);
         idSet.add(`${connectionPath[i+1]}->${connectionPath[i]}`);
     }
     return idSet;
   }, [connectionPath]);
-  
+
   const selectedNodeData = useMemo(() => selectedNode ? nodes[selectedNode] : null, [selectedNode, nodes]);
-  const selectedNodePosition = selectedNodeData ? selectedNodeData.position : null;
+  const selectedNodePosition = selectedNodeData ? selectedNodeData.position : undefined;
 
 
   return (
@@ -262,11 +279,11 @@ function SceneContent() {
       <Physics gravity={[0, 0, 0]}>
         <Suspense fallback={null}>
             {visibleNodes.map(node => {
-            const isConnected = selectedNode && edges.some(edge => 
-              (edge.source === selectedNode && edge.target === node.id) || 
+            const isConnected = selectedNode && edges.some(edge =>
+              (edge.source === selectedNode && edge.target === node.id) ||
               (edge.target === selectedNode && edge.source === node.id)
             );
-            
+
             let isHighlightedNeighbor = false;
             if (selectedNode && isConnected) {
               if (selectedNodeData?.type === 'author') {
@@ -312,11 +329,11 @@ function SceneContent() {
           const sourceNode = nodes[edge.source]
           const targetNode = nodes[edge.target]
           if (!sourceNode || !targetNode) return null;
-          
+
           const isPathEdge = pathActive && pathEdgeIds.has(`${edge.source}->${edge.target}`);
           const isConnectedToSelected = selectedNode && (edge.source === selectedNode || edge.target === selectedNode);
           const isDimmed = (selectedNode && !isConnectedToSelected) || (pathActive && !isPathEdge);
-          
+
           const isThemeConnection = sourceNode.type === 'theme' || targetNode.type === 'theme';
           const themeColor = '#2dd4bf';
 

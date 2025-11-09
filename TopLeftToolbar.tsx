@@ -5,7 +5,7 @@
 import { useState } from "react";
 import c from "clsx";
 import useStore from "./store";
-import { 
+import {
     setActivePanel,
     toggleConnectionMode,
     toggleTimelineFilter,
@@ -13,9 +13,9 @@ import {
     toggleVisualizationMode,
 } from "./actions";
 
-const TopLeftToolbar = () => {
+const TopLeftToolbar: React.FC = () => {
     const [isExpanded, setIsExpanded] = useState(false);
-    
+
     const activePanel = useStore(s => s.activePanel);
     const selectedNode = useStore(s => s.selectedNode);
     const connectionMode = useStore(s => s.connectionMode);
@@ -50,48 +50,48 @@ const TopLeftToolbar = () => {
 
             <div className={c("toolbar-expansion", { expanded: isExpanded })}>
                  {/* Data Tools */}
-                <button 
-                    title="Selection Details" 
-                    onClick={() => setActivePanel('details')} 
+                <button
+                    title="Selection Details"
+                    onClick={() => setActivePanel('details')}
                     className={c('toolbar-button', { active: activePanel === 'details' })}
                     disabled={!selectedNode || !isGraphMode}
                 >
                     <span className="icon">info</span>
                 </button>
-                <button 
-                    title="Filters" 
-                    onClick={() => setActivePanel('filters')} 
+                <button
+                    title="Filters"
+                    onClick={() => setActivePanel('filters')}
                     className={c('toolbar-button', { active: activePanel === 'filters' })}
                 >
                     <span className="icon">filter_alt</span>
                 </button>
-                <button 
-                    title="Graph Nodes" 
-                    onClick={() => setActivePanel('nodes')} 
+                <button
+                    title="Graph Nodes"
+                    onClick={() => setActivePanel('nodes')}
                     className={c('toolbar-button', { active: activePanel === 'nodes' })}
                 >
                     <span className="icon">list</span>
                 </button>
-                
+
                  {/* Action Tools */}
-                <button 
-                    title="Find Connection Path" 
-                    onClick={toggleConnectionMode} 
+                <button
+                    title="Find Connection Path"
+                    onClick={toggleConnectionMode}
                     className={c('toolbar-button', { active: connectionMode !== 'inactive' })}
                     disabled={!isGraphMode}
                 >
                     <span className="icon">timeline</span>
                 </button>
-                <button 
-                    title="Filter by Timeline" 
-                    onClick={toggleTimelineFilter} 
+                <button
+                    title="Filter by Timeline"
+                    onClick={toggleTimelineFilter}
                     className={c('toolbar-button', { active: isTimelineActive })}
                      disabled={!isGraphMode}
                 >
                     <span className="icon">calendar_month</span>
                 </button>
-                 <button 
-                    title="Reset Universe" 
+                 <button
+                    title="Reset Universe"
                     onClick={toggleResetPanel}
                     className={c('toolbar-button', { active: isResetPanelVisible })}
                 >

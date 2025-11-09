@@ -2,8 +2,8 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { Billboard, Text, Sphere, Image, Plane, Circle, Octahedron } from "@react-three/drei";
-import { RigidBody, BallCollider } from "@react-three/rapier";
+import { Billboard, Text, Sphere, Plane, Circle, Octahedron } from "@react-three/drei";
+import { RigidBody, BallCollider, RapierRigidBody } from "@react-three/rapier";
 import { setSelectedNode, setActivePanel, focusNode } from "./actions";
 import React, { useMemo, useRef, useState, forwardRef, useImperativeHandle, useEffect, memo, Suspense, useLayoutEffect } from "react";
 import * as THREE from 'three';
@@ -11,25 +11,36 @@ import { Color } from "three";
 import { useFrame, useLoader } from "@react-three/fiber";
 import useStore from "./store";
 import { animate } from "motion";
+import type { ThreeEvent } from "@react-three/fiber";
 
+
+interface ImageErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback: React.ReactNode;
+  url: string;
+}
+
+interface ImageErrorBoundaryState {
+  hasError: boolean;
+}
 
 // Error boundary to catch image loading failures from useLoader
-class ImageErrorBoundary extends React.Component {
-  constructor(props) {
+class ImageErrorBoundary extends React.Component<ImageErrorBoundaryProps, ImageErrorBoundaryState> {
+  constructor(props: ImageErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(_error: Error): Partial<ImageErrorBoundaryState> {
     return { hasError: true };
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     console.warn(`Image load error for ${this.props.url}:`, error, errorInfo);
   }
-  
+
   // Reset state if the URL changes so we can retry loading a new image
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: ImageErrorBoundaryProps): void {
     if (this.props.url !== prevProps.url) {
       this.setState({ hasError: false });
     }
@@ -71,28 +82,38 @@ const fragmentShader = `
         float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
         color.rgb = vec3(gray);
     }
-    
+
     gl_FragColor = vec4(color.rgb, color.a * opacity * mask);
   }
 `;
 
+interface FadingImagePlaneProps {
+  imageUrl: string;
+  size: number | [number, number];
+  isGrayscale: boolean;
+  opacity: number;
+  isBook?: boolean;
+}
+
 // A component to load the texture and create the shader material with a fade-in effect.
-const FadingImagePlane = ({ imageUrl, size, isGrayscale, opacity, isBook = false }) => {
+const FadingImagePlane: React.FC<FadingImagePlaneProps> = ({ imageUrl, size, isGrayscale, opacity, isBook = false }) => {
     const texture = useLoader(THREE.TextureLoader, imageUrl);
-    const materialRef = useRef();
+    const materialRef = useRef<THREE.ShaderMaterial>(null!);
 
     // Animate opacity on load
     useLayoutEffect(() => {
         if (materialRef.current) {
+            // @ts-ignore - motion library type issue
             materialRef.current.uniforms.opacity.value = 0;
+            // @ts-expect-error - motion library type mismatch
             animate(
-                (v) => { if (materialRef.current) materialRef.current.uniforms.opacity.value = v },
+                (v: number) => { if (materialRef.current) materialRef.current.uniforms.opacity.value = v },
                 { from: 0, to: opacity, duration: 0.8, ease: 'easeOut' }
             );
         }
     }, [texture, opacity]); // Rerun when texture or target opacity changes
-    
-    const shaderMaterial = useMemo(() => new THREE.ShaderMaterial({
+
+    const shaderMaterial = useMemo<THREE.ShaderMaterial>(() => new THREE.ShaderMaterial({
         uniforms: {
             tex: { value: texture },
             isGrayscale: { value: isGrayscale ? 1.0 : 0.0 },
@@ -103,7 +124,7 @@ const FadingImagePlane = ({ imageUrl, size, isGrayscale, opacity, isBook = false
         transparent: true,
     }), [texture, isGrayscale]);
 
-    const planeArgs = isBook ? [size[0], size[1]] : [size * 2, size * 2];
+    const planeArgs: [number, number] = isBook ? (size as [number, number]) : [size as number * 2, size as number * 2];
 
     return (
         <Plane args={planeArgs}>
@@ -113,7 +134,7 @@ const FadingImagePlane = ({ imageUrl, size, isGrayscale, opacity, isBook = false
 };
 
 
-const getInitials = (name) => {
+const getInitials = (name: string | undefined): string => {
     if (!name || typeof name !== 'string') return '?';
     const parts = name.trim().split(' ').filter(Boolean);
     if (parts.length > 1) {
@@ -127,8 +148,31 @@ const getInitials = (name) => {
     return (parts[0]?.[0] || '?').toUpperCase();
 };
 
+interface AuthorWithImage {
+  id: string;
+  [key: string]: any;
+}
 
-const LiteraryNode = forwardRef(({
+interface LiteraryNodeProps {
+  id: string;
+  label: string;
+  position: [number, number, number];
+  initialPosition?: [number, number, number];
+  color: string;
+  highlight: boolean;
+  isExpanding: boolean;
+  dim: boolean;
+  selectionActive: boolean;
+  isInPath: boolean;
+  imageUrl?: string | null;
+  type: 'book' | 'author' | 'theme';
+  authorWithImage?: AuthorWithImage | null;
+  size?: number;
+  selectedNodePosition?: [number, number, number];
+  livePositionsRef?: React.MutableRefObject<Record<string, THREE.Vector3>>;
+}
+
+const LiteraryNode = forwardRef<RapierRigidBody, LiteraryNodeProps>(({
   id,
   label,
   position,
@@ -146,11 +190,11 @@ const LiteraryNode = forwardRef(({
   selectedNodePosition,
   livePositionsRef
 }, ref) => {
-  const rigidBodyRef = useRef();
-  const groupRef = useRef();
+  const rigidBodyRef = useRef<RapierRigidBody>(null);
+  const groupRef = useRef<THREE.Group>(null);
 
-  useImperativeHandle(ref, () => rigidBodyRef.current);
-  
+  useImperativeHandle(ref, () => rigidBodyRef.current!);
+
   const isNewNode = !!initialPosition;
   const [isAnimatingIn, setIsAnimatingIn] = useState(isNewNode);
 
@@ -160,15 +204,15 @@ const LiteraryNode = forwardRef(({
   // New useEffect to manage body type imperatively, preventing component remounts.
   useEffect(() => {
     if (!rigidBodyRef.current) return;
-    
+
     const isKinematic = highlight || isAnimatingIn || isNeighbor;
-    
+
     rigidBodyRef.current.setBodyType(
-      isKinematic ? 'kinematicPosition' : 'dynamic',
+      isKinematic ? 1 as any : 0 as any,
       true // Wake the body up after changing its type
     );
   }, [highlight, isAnimatingIn, isNeighbor]);
-  
+
   // Create deterministic, unique orbital parameters for each node to de-synchronize their animations.
   const orbitParams = useMemo(() => {
       let hash = 0;
@@ -183,10 +227,10 @@ const LiteraryNode = forwardRef(({
           Math.cos(hash * 0.5) * 1.0, // Y is dominant for a generally upright orbit
           Math.sin(hash * 0.7) * 0.5,
       ).normalize();
-      
+
       // Use another part of the hash for a phase offset, so they don't all start at the same point
       const phase = (hash & 0xff) / 0xff * Math.PI * 2;
-      
+
       return { axis, phase };
   }, [id]);
 
@@ -204,7 +248,7 @@ const LiteraryNode = forwardRef(({
   useFrame((state, delta) => {
     if (!rigidBodyRef.current) return;
     const currentPos = rigidBodyRef.current.translation();
-    
+
     // Update live position for edge rendering
     if (livePositionsRef && livePositionsRef.current) {
       if (!livePositionsRef.current[id]) {
@@ -216,7 +260,7 @@ const LiteraryNode = forwardRef(({
     // Animate position for new nodes
     if (isAnimatingIn) {
       currentVec.set(currentPos.x, currentPos.y, currentPos.z);
-      
+
       if (currentVec.distanceTo(finalPos) < 0.1) {
         rigidBodyRef.current.setTranslation(finalPos, true);
         setIsAnimatingIn(false);
@@ -229,18 +273,18 @@ const LiteraryNode = forwardRef(({
     // Orbital animation for neighbors
     if (isNeighbor && selectedNodePosition) {
         centerPosVec.set(...selectedNodePosition);
-        
+
         // The node's "at rest" position relative to the center. Using this stable vector prevents drift.
         initialRelativePosVec.copy(finalPos).sub(centerPosVec);
 
         const orbitSpeed = 0.3; // Radians per second
-        
+
         // Calculate the total rotation based on elapsed time for a smooth, continuous animation
         const rotationAngle = state.clock.elapsedTime * orbitSpeed + orbitParams.phase;
-        
+
         // Apply the unique, deterministic rotation
         rotatedPosVec.copy(initialRelativePosVec).applyAxisAngle(orbitParams.axis, rotationAngle);
-        
+
         const newPos = newPosVec.copy(centerPosVec).add(rotatedPosVec);
         rigidBodyRef.current.setNextKinematicTranslation(newPos);
     }
@@ -248,7 +292,7 @@ const LiteraryNode = forwardRef(({
     // Animate scale for node state changes
     if (groupRef.current) {
       let targetScale = isInPath ? 1.7 : highlight ? 1.5 : isNeighbor ? 1.1 : 1;
-      
+
       if (isExpanding) {
         const pulseFrequency = 12; // Faster pulse for loading state
         const pulseAmplitude = 0.15;
@@ -259,7 +303,7 @@ const LiteraryNode = forwardRef(({
         const pulseAmplitude = 0.05;
         targetScale += Math.sin(state.clock.elapsedTime * pulseFrequency) * pulseAmplitude;
       }
-      
+
       groupRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
     }
   });
@@ -331,11 +375,11 @@ const LiteraryNode = forwardRef(({
             {imageUrl ? (
               <ImageErrorBoundary fallback={bookPlaceholder} url={imageUrl}>
                 <Suspense fallback={bookPlaceholder}>
-                    <FadingImagePlane 
-                        imageUrl={imageUrl} 
-                        size={[bookWidth, bookHeight]} 
-                        isGrayscale={dim} 
-                        opacity={opacity} 
+                    <FadingImagePlane
+                        imageUrl={imageUrl}
+                        size={[bookWidth, bookHeight]}
+                        isGrayscale={dim}
+                        opacity={opacity}
                         isBook={true}
                     />
                     {/* Info Button */}
@@ -345,7 +389,7 @@ const LiteraryNode = forwardRef(({
                         (bookHeight / 2) - (infoButtonHeight / 2) - buttonPadding,
                         0.01
                       ]}
-                      onClick={(e) => {
+                      onClick={(e: ThreeEvent<MouseEvent>) => {
                         e.stopPropagation();
                         if (useStore.getState().selectedNode !== id) {
                             focusNode(id);
@@ -370,7 +414,7 @@ const LiteraryNode = forwardRef(({
                           -(bookHeight / 2) + (authorButtonHeight / 2) + buttonPadding,
                           0.01
                         ]}
-                        onClick={(e) => { e.stopPropagation(); setSelectedNode(authorWithImage.id); }}
+                        onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); setSelectedNode(authorWithImage.id); }}
                         onPointerEnter={() => (document.body.style.cursor = 'pointer')}
                         onPointerLeave={() => (document.body.style.cursor = 'auto')}
                       >
@@ -432,11 +476,11 @@ const LiteraryNode = forwardRef(({
             {imageUrl ? (
               <ImageErrorBoundary fallback={authorPlaceholder} url={imageUrl}>
                 <Suspense fallback={authorPlaceholder}>
-                    <FadingImagePlane 
-                        imageUrl={imageUrl} 
-                        size={effectiveSize} 
-                        isGrayscale={dim} 
-                        opacity={opacity} 
+                    <FadingImagePlane
+                        imageUrl={imageUrl}
+                        size={effectiveSize}
+                        isGrayscale={dim}
+                        opacity={opacity}
                     />
                 </Suspense>
               </ImageErrorBoundary>
@@ -486,15 +530,18 @@ const LiteraryNode = forwardRef(({
       linearDamping={4}
       angularDamping={1}
       colliders={false}
-      onPointerEnter={() => (document.body.style.cursor = 'pointer')}
-      onPointerLeave={() => (document.body.style.cursor = 'auto')}
-      onClick={(e) => {
-        e.stopPropagation();
-        setSelectedNode(id);
-      }}
     >
       <BallCollider args={[effectiveSize]} />
-      <group ref={groupRef} scale={isNewNode ? 0.01 : 1}>
+      <group
+        ref={groupRef}
+        scale={isNewNode ? 0.01 : 1}
+        onPointerEnter={() => (document.body.style.cursor = 'pointer')}
+        onPointerLeave={() => (document.body.style.cursor = 'auto')}
+        onClick={(e: ThreeEvent<MouseEvent>) => {
+          e.stopPropagation();
+          setSelectedNode(id);
+        }}
+      >
         {renderNodeShape()}
 
         {/* Label for all nodes */}
