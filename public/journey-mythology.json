@@ -1,0 +1,70 @@
+{
+  "nodes": [
+    {
+      "label": "Homer",
+      "type": "author",
+      "description": "The legendary author of the Iliad and the Odyssey, two epic poems that are the central works of ancient Greek literature.",
+      "publicationYear": null,
+      "api_key": "/authors/OL28998A",
+      "imageUrl": "https://covers.openlibrary.org/a/id/7417532-L.jpg"
+    },
+    {
+      "label": "The Iliad",
+      "type": "book",
+      "description": "An ancient Greek epic poem in dactylic hexameter, traditionally attributed to Homer. Set during the Trojan War.",
+      "publicationYear": -800,
+      "api_key": "/works/OL28014W",
+      "imageUrl": "https://covers.openlibrary.org/b/id/13098334-L.jpg"
+    },
+    {
+      "label": "The Odyssey",
+      "type": "book",
+      "description": "One of two major ancient Greek epic poems attributed to Homer. It is, in part, a sequel to the Iliad.",
+      "publicationYear": -800,
+      "api_key": "/works/OL28015W",
+      "imageUrl": "https://covers.openlibrary.org/b/id/13123164-L.jpg"
+    },
+    {
+      "label": "Achilles",
+      "type": "theme",
+      "description": "A hero of the Trojan War, the greatest of all the Greek warriors, and is a central character in Homer's Iliad.",
+      "publicationYear": null
+    },
+    {
+      "label": "Odysseus",
+      "type": "theme",
+      "description": "A legendary Greek king of Ithaca and the hero of Homer's epic poem the Odyssey.",
+      "publicationYear": null
+    },
+    {
+      "label": "Greek Mythology",
+      "type": "theme",
+      "description": "The body of myths originally told by the ancient Greeks and a genre of Ancient Greek folklore.",
+      "publicationYear": null
+    },
+    {
+      "label": "Trojan War",
+      "type": "theme",
+      "description": "A legendary conflict between the early Greeks and the people of Troy in western Anatolia, dated by later Greek authors to the 12th or 13th century BC.",
+      "publicationYear": null
+    },
+    {
+      "label": "Epic Poetry",
+      "type": "theme",
+      "description": "A lengthy narrative poem, ordinarily concerning a serious subject containing details of heroic deeds and events significant to a culture or nation.",
+      "publicationYear": null
+    }
+  ],
+  "edges": [
+    {"source": "Homer", "target": "The Iliad"},
+    {"source": "Homer", "target": "The Odyssey"},
+    {"source": "The Iliad", "target": "Achilles"},
+    {"source": "The Iliad", "target": "Trojan War"},
+    {"source": "The Odyssey", "target": "Odysseus"},
+    {"source": "The Odyssey", "target": "Trojan War"},
+    {"source": "Homer", "target": "Epic Poetry"},
+    {"source": "The Iliad", "target": "Greek Mythology"},
+    {"source": "The Odyssey", "target": "Greek Mythology"}
+  ],
+  "commentary": "Journey back to Ancient Greece and explore its foundational myths and epic poems."
+}

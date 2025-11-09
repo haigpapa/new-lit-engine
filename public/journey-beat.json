@@ -1,0 +1,67 @@
+{
+  "nodes": [
+    {
+      "label": "Jack Kerouac",
+      "type": "author",
+      "description": "An American novelist and poet who was a pioneer of the Beat Generation.",
+      "publicationYear": null,
+      "api_key": "/authors/OL24202A",
+      "imageUrl": "https://covers.openlibrary.org/a/id/7206109-L.jpg"
+    },
+    {
+      "label": "On the Road",
+      "type": "book",
+      "description": "A 1957 novel by Jack Kerouac, based on the travels of Kerouac and his friends across the United States. It is a defining work of the postwar Beat and Counterculture generations.",
+      "publicationYear": 1957,
+      "api_key": "/works/OL46627W",
+      "imageUrl": "https://covers.openlibrary.org/b/id/14454157-L.jpg"
+    },
+    {
+      "label": "Allen Ginsberg",
+      "type": "author",
+      "description": "An American poet and writer. Starting in the 1940s, he was a leading figure of the Beat Generation.",
+      "publicationYear": null,
+      "api_key": "/authors/OL34224A",
+      "imageUrl": "https://covers.openlibrary.org/a/id/7196013-L.jpg"
+    },
+    {
+      "label": "Howl",
+      "type": "book",
+      "description": "A poem written by Allen Ginsberg in 1955, considered to be one of the great works of American literature.",
+      "publicationYear": 1956,
+      "api_key": "/works/OL1005700W",
+      "imageUrl": "https://covers.openlibrary.org/b/id/12903333-L.jpg"
+    },
+    {
+      "label": "William S. Burroughs",
+      "type": "author",
+      "description": "An American writer and visual artist, widely considered a primary figure of the Beat Generation and a major postmodern author.",
+      "publicationYear": null,
+      "api_key": "/authors/OL24192A",
+      "imageUrl": "https://covers.openlibrary.org/a/id/7187122-L.jpg"
+    },
+    {
+      "label": "The Beat Generation",
+      "type": "theme",
+      "description": "A literary movement started by a group of authors whose work explored and influenced American culture and politics in the post-war era.",
+      "publicationYear": null
+    },
+    {
+      "label": "Counter-culture",
+      "type": "theme",
+      "description": "A subculture whose values and norms of behavior differ substantially from those of mainstream society.",
+      "publicationYear": null
+    }
+  ],
+  "edges": [
+    {"source": "Jack Kerouac", "target": "On the Road"},
+    {"source": "On the Road", "target": "The Beat Generation"},
+    {"source": "Allen Ginsberg", "target": "Howl"},
+    {"source": "Howl", "target": "The Beat Generation"},
+    {"source": "Jack Kerouac", "target": "Allen Ginsberg"},
+    {"source": "Allen Ginsberg", "target": "William S. Burroughs"},
+    {"source": "William S. Burroughs", "target": "The Beat Generation"},
+    {"source": "The Beat Generation", "target": "Counter-culture"}
+  ],
+  "commentary": "Hit the road with the Beat Generation, a movement that redefined American literature."
+}

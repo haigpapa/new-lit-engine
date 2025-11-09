@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    {"label": "William Shakespeare", "type": "author", "description": "An English playwright, poet, and actor, widely regarded as the greatest writer in the English language.", "publicationYear": null},
+    {"label": "Hamlet", "type": "book", "description": "A tragedy by William Shakespeare, one of his best-known works.", "publicationYear": 1603},
+    {"label": "Macbeth", "type": "book", "description": "A tragedy by William Shakespeare about a Scottish general who receives a prophecy from a trio of witches.", "publicationYear": 1623},
+    {"label": "Romeo and Juliet", "type": "book", "description": "A tragedy by William Shakespeare about two young star-crossed lovers whose deaths ultimately reconcile their feuding families.", "publicationYear": 1597},
+    {"label": "Tragedy", "type": "theme", "description": "A genre of drama based on human suffering and, mainly, the terrible events that befall a main character.", "publicationYear": null},
+    {"label": "Ambition", "type": "theme", "description": "A strong desire to do or to achieve something, typically requiring determination and hard work.", "publicationYear": null},
+    {"label": "Christopher Marlowe", "type": "author", "description": "An English playwright, poet and translator of the Elizabethan era. Marlowe was the foremost Elizabethan tragedian of his day.", "publicationYear": null},
+    {"label": "Doctor Faustus", "type": "book", "description": "An Elizabethan tragedy by Christopher Marlowe, based on German stories about the character Faust.", "publicationYear": 1604},
+    {"label": "Revenge", "type": "theme", "description": "The action of inflicting hurt or harm on someone for an injury or wrong suffered at their hands.", "publicationYear": null},
+    {"label": "Forbidden Love", "type": "theme", "description": "A love affair that is opposed by outside forces.", "publicationYear": null}
+  ],
+  "edges": [
+    {"source": "William Shakespeare", "target": "Hamlet"},
+    {"source": "William Shakespeare", "target": "Macbeth"},
+    {"source": "William Shakespeare", "target": "Romeo and Juliet"},
+    {"source": "William Shakespeare", "target": "Christopher Marlowe"},
+    {"source": "Hamlet", "target": "Tragedy"},
+    {"source": "Hamlet", "target": "Revenge"},
+    {"source": "Macbeth", "target": "Tragedy"},
+    {"source": "Macbeth", "target": "Ambition"},
+    {"source": "Romeo and Juliet", "target": "Tragedy"},
+    {"source": "Romeo and Juliet", "target": "Forbidden Love"},
+    {"source": "Christopher Marlowe", "target": "Doctor Faustus"},
+    {"source": "Doctor Faustus", "target": "Ambition"}
+  ],
+  "commentary": "Welcome to the Literary Explorer! Click a node to expand it, or search to add to the universe."
+}
