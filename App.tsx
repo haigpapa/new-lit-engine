@@ -10,6 +10,7 @@ import useStore from "./store";
 import SidePanel from "./SidePanel";
 import TopLeftToolbar from "./TopLeftToolbar";
 import Intro from "./Intro";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 import {
   sendQuery,
@@ -144,6 +145,9 @@ export default function App() {
 
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts({ inputRef });
 
   const handleSendQuery = () => {
     if (value) {
