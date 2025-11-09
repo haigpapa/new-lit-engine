@@ -193,7 +193,7 @@ const resetConnectionState = () => {
     });
 }
 
-export const init = async () => {
+export const init = async (): Promise<void> => {
     if (get().didInit) return;
     
     const minDisplayTime = 1500;
@@ -319,7 +319,7 @@ export const sendQuery = async query => {
   }
 }
 
-export const clearQuery = () => {
+export const clearQuery = (): void => {
   resetConnectionState();
   set(state => {
     state.nodes = {};
@@ -342,7 +342,7 @@ export const clearQuery = () => {
   });
 }
 
-export const startJourney = async (journeyName) => {
+export const startJourney = async (journeyName: string): Promise<void> => {
     resetConnectionState();
     const journeyFile = journeyName.toLowerCase().replace(/\s/g, '-');
   
@@ -403,7 +403,7 @@ export const startJourney = async (journeyName) => {
     }
   };
 
-export const findConnection = async (startNodeId, endNodeId) => {
+export const findConnection = async (startNodeId: string, endNodeId: string): Promise<void> => {
   const startNode = get().nodes[startNodeId];
   const endNode = get().nodes[endNodeId];
 
@@ -572,7 +572,7 @@ export const setSelectedNode = async (nodeId) => {
 };
 
 
-export const generateAiSummary = async (nodeId) => {
+export const generateAiSummary = async (nodeId: string): Promise<void> => {
     const node = get().nodes[nodeId];
     if (!node || node.aiSummary) return;
 
@@ -600,7 +600,7 @@ export const generateAiSummary = async (nodeId) => {
     }
 };
 
-export const focusNode = nodeId =>
+export const focusNode = (nodeId: string): void =>
   set(state => {
     if (get().selectedNode === nodeId) {
       state.selectedNode = null
@@ -609,7 +609,7 @@ export const focusNode = nodeId =>
     }
   })
 
-export const setActivePanel = panelName => {
+export const setActivePanel = (panelName: string | null): void => {
     set(state => {
         if (state.activePanel === panelName) {
             state.activePanel = null;
@@ -620,14 +620,14 @@ export const setActivePanel = panelName => {
 }
 
 
-export const toggleNodeTypeFilter = nodeType =>
+export const toggleNodeTypeFilter = (nodeType: 'book' | 'author' | 'theme'): void =>
   set(state => {
     if (state.nodeFilters[nodeType] !== undefined) {
       state.nodeFilters[nodeType] = !state.nodeFilters[nodeType];
     }
   });
 
-export const toggleConnectionMode = () => {
+export const toggleConnectionMode = (): void => {
     const currentMode = get().connectionMode;
     if (currentMode === 'inactive') {
       set(state => {
@@ -644,37 +644,37 @@ export const toggleConnectionMode = () => {
     }
 }
 
-export const setTimelineRange = (range) => {
+export const setTimelineRange = (range: { start?: number; end?: number }): void => {
     set(state => {
         state.timelineRange = { ...state.timelineRange, ...range };
     });
 };
 
-export const toggleTimelineFilter = () => {
+export const toggleTimelineFilter = (): void => {
     set(state => {
         state.isTimelineActive = !state.isTimelineActive;
     });
 };
 
-export const toggleResetPanel = () => {
+export const toggleResetPanel = (): void => {
     set(state => {
         state.isResetPanelVisible = !state.isResetPanelVisible;
     });
 };
 
-export const toggleJourneySuggestions = () => {
+export const toggleJourneySuggestions = (): void => {
     set(state => {
         state.areJourneySuggestionsVisible = !state.areJourneySuggestionsVisible;
     });
 };
 
-export const toggleGroundedSearch = () => {
+export const toggleGroundedSearch = (): void => {
     set(state => {
         state.isGroundedSearchActive = !state.isGroundedSearchActive;
     });
 };
 
-export const toggleVisualizationMode = () => {
+export const toggleVisualizationMode = (): void => {
     const currentMode = get().visualizationMode;
     if (currentMode === 'graph') {
         set(state => {
@@ -691,7 +691,7 @@ export const toggleVisualizationMode = () => {
     }
 };
 
-export const resetCamera = () => {
+export const resetCamera = (): void => {
     set(state => {
         state.selectedNode = null;
         state.resetCam = true;
@@ -701,7 +701,7 @@ export const resetCamera = () => {
 
 // --- BOOK GRID ACTIONS ---
 
-export const initBookGrid = () => {
+export const initBookGrid = (): void => {
     if (get().bookGrid.slots.length > 0) return; // Already initialized
     const slots = Array.from({ length: 100 }, (_, i) => ({
         index: i,
@@ -713,7 +713,7 @@ export const initBookGrid = () => {
     });
 };
 
-export const seedGrid = async (query) => {
+export const seedGrid = async (query: string): Promise<void> => {
     set(state => {
         state.bookGrid.isLoading = true;
         // Reset grid for new seed
@@ -738,7 +738,7 @@ export const seedGrid = async (query) => {
     }
 };
 
-export const populateGridSuggestions = async () => {
+export const populateGridSuggestions = async (): Promise<void> => {
     set(state => { state.bookGrid.isLoading = true; });
 
     const { slots, dismissedBooks } = get().bookGrid;
@@ -783,14 +783,14 @@ export const populateGridSuggestions = async () => {
 };
 
 
-export const lockGridSlot = (index) => {
+export const lockGridSlot = (index: number): void => {
     set(state => {
         state.bookGrid.slots[index].status = 'locked';
     });
     populateGridSuggestions();
 };
 
-export const dismissGridSlot = (index) => {
+export const dismissGridSlot = (index: number): void => {
     const slot = get().bookGrid.slots[index];
     if (!slot || !slot.bookData) return;
     
@@ -803,7 +803,7 @@ export const dismissGridSlot = (index) => {
     populateGridSuggestions();
 };
 
-export const addBookToGrid = (nodeId) => {
+export const addBookToGrid = (nodeId: string): void => {
     const { nodes, edges, bookGrid } = get();
     const node = nodes[nodeId];
 

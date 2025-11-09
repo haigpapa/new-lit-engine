@@ -3,25 +3,31 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import {GoogleGenAI} from '@google/genai'
+import type { LLMRequest, LLMResponse } from './types'
 
 const ai = new GoogleGenAI({
   apiKey: process.env.API_KEY
 })
 
 // Helper for retrying promises with exponential backoff
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
-export async function retryWithBackoff(fn, retries = 3, initialDelay = 1000, maxDelay = 10000) {
+export async function retryWithBackoff(
+  fn: () => Promise<any>,
+  retries: number = 3,
+  initialDelay: number = 1000,
+  maxDelay: number = 10000
+): Promise<any> {
     let delay = initialDelay;
     for (let i = 0; i < retries; i++) {
         try {
             return await fn();
-        } catch (error) {
+        } catch (error: any) {
             const errorString = error.toString().toLowerCase();
-            const isRateLimitError = errorString.includes('429') || 
+            const isRateLimitError = errorString.includes('429') ||
                                      errorString.includes('resource_exhausted') ||
                                      errorString.includes('rate limit');
-            
+
             const isServerError = errorString.includes('500') ||
                                   errorString.includes('internal');
 
@@ -45,7 +51,7 @@ export const queryLlm = async ({
   model = 'gemini-2.5-flash',
   prompt,
   config = {},
-}) => {
+}: LLMRequest): Promise<LLMResponse> => {
   const generate = () => ai.models.generateContent({
     model,
     contents: prompt,

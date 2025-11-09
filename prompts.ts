@@ -2,8 +2,9 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+import type { Node } from './types'
 
-export const queryPrompt = (query) => `\
+export const queryPrompt = (query: string): string => `\
 You are a world-class literary scholar and AI assistant for a visual exploration engine. Your task is to find a small, interconnected set of books, authors, and themes related to a user's query.
 
 The user's query is: "${query}"
@@ -25,7 +26,7 @@ Important Instructions:
 `;
 
 
-export const findConnectionPrompt = (startNode, endNode) => `\
+export const findConnectionPrompt = (startNode: Node, endNode: Node): string => `\
 You are an AI assistant with deep knowledge of literary history, criticism, and theory. Your task is to act as a literary detective, finding the most insightful and compelling path between two nodes.
 
 The user wants to connect:
@@ -55,7 +56,7 @@ Important Instructions:
 5. Only return the raw JSON object.
 `;
 
-export const extractThemesPrompt = (nodeLabel, text) => `\
+export const extractThemesPrompt = (nodeLabel: string, text: string): string => `\
 You are an AI assistant for a literary exploration engine. Your task is to extract key literary, philosophical, or artistic themes from the provided text.
 
 The text is a description or biography for: "${nodeLabel}".
@@ -77,8 +78,8 @@ Important Instructions:
 `;
 
 
-export const createSummaryPrompt = (node) => {
-    let context, request;
+export const createSummaryPrompt = (node: Node): string => {
+    let context: string, request: string;
     const commonInstructions = `
 Your response must be a single, valid JSON object with the structure: { "summary": "", "analysis": "" }.
 
@@ -118,8 +119,8 @@ ${commonInstructions}
 `;
 };
 
-export const createExpansionPrompt = (node) => {
-    let context, request;
+export const createExpansionPrompt = (node: Node): string => {
+    let context: string, request: string;
     const commonInstructions = `
 Your response must be a single, valid JSON object with the following structure: { "nodes": [], "edges": [], "commentary": "" }.
 
@@ -167,7 +168,11 @@ ${commonInstructions}
 };
 
 
-export const createBookGridPrompt = (lockedBooks, excludedBooks, count) => `\
+export const createBookGridPrompt = (
+  lockedBooks: any[],
+  excludedBooks: string[],
+  count: number
+): string => `\
 You are a world-class librarian and AI assistant for a book recommendation wall. Your task is to help a user build their personal "Top 100" library by providing insightful book recommendations.
 
 The user has already "locked in" the following books as their favorites:
