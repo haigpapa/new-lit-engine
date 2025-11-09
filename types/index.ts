@@ -121,6 +121,14 @@ export interface LLMConfig {
   thinkingConfig?: {
     thinkingBudget: number;
   };
+  generationConfig?: {
+    responseMimeType?: string;
+    responseSchema?: any;
+    temperature?: number;
+    topP?: number;
+    topK?: number;
+    maxOutputTokens?: number;
+  };
 }
 
 export interface LLMRequest {

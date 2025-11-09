@@ -76,6 +76,23 @@ Pre-built thematic explorations:
 
 ---
 
+## 🔒 Security
+
+**Critical Security Update**: As of the latest version, API keys are now **securely stored server-side** and never exposed to the client.
+
+### Secure Architecture
+
+- **Backend Proxy Server**: Express.js server that handles all AI API calls
+- **API Key Protection**: Gemini API key is stored in `.env` server-side only
+- **Rate Limiting**: Automatic rate limiting to prevent API abuse (15 requests/min per IP)
+- **CORS Protection**: Configurable CORS policies for production deployments
+- **Security Headers**: Helmet.js for setting secure HTTP headers
+- **Input Validation**: Server-side validation of all requests
+
+**Never commit `.env` files** - they are automatically gitignored for security.
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -96,28 +113,69 @@ Pre-built thematic explorations:
    npm install
    ```
 
-3. **Configure environment**
+3. **Configure environment variables**
 
-   Create a `.env.local` file in the root directory:
-   ```env
-   GEMINI_API_KEY=your_api_key_here
+   Create a `.env` file in the root directory (or copy from `.env.example`):
+   ```bash
+   cp .env.example .env
    ```
 
-4. **Start the development server**
+   Edit `.env` and add your Gemini API key:
+   ```env
+   # REQUIRED: Your Google Gemini API key (server-side only)
+   GEMINI_API_KEY=your_actual_api_key_here
+
+   # OPTIONAL: Server configuration
+   PORT=3001
+   NODE_ENV=development
+   ```
+
+   **⚠️ IMPORTANT**: Never commit the `.env` file or share your API key publicly.
+
+4. **Start the application**
+
+   The application now runs with both a backend server and frontend client:
+
    ```bash
+   # Start both server and client (recommended)
    npm run dev
+   ```
+
+   This will start:
+   - Backend API server on `http://localhost:3001`
+   - Frontend client on `http://localhost:5173`
+
+   Alternatively, run them separately:
+   ```bash
+   # Terminal 1: Start backend server
+   npm run dev:server
+
+   # Terminal 2: Start frontend client
+   npm run dev:client
    ```
 
 5. **Open your browser**
 
-   Navigate to `http://localhost:3000`
+   Navigate to `http://localhost:5173`
 
 ### Build for Production
 
 ```bash
+# Build the frontend
 npm run build
+
+# Start the production server
+npm start
+
+# Serve the built frontend with the API
 npm run preview
 ```
+
+**Production Deployment Notes**:
+- Set `NODE_ENV=production` in your `.env`
+- Configure `CLIENT_URL` in `.env` for CORS (e.g., `CLIENT_URL=https://your-domain.com`)
+- Ensure your `.env` file is secure and never publicly accessible
+- Consider using environment variable management tools (e.g., Vercel env vars, AWS Secrets Manager)
 
 ---
 
@@ -211,8 +269,15 @@ Real-time performance dashboard with:
 - Zustand 5.0 with Immer for immutable updates
 - Auto-generated selector hooks for performance
 
+**Backend & Security** 🔒
+- Express.js 5.1 server for API proxying
+- Helmet.js for security headers
+- CORS protection with configurable policies
+- Express rate limiting (15 req/min per IP for AI calls)
+- Server-side API key storage (never exposed to client)
+
 **AI & APIs**
-- Google Gemini 2.5 (Flash, Pro, Flash-Lite)
+- Google Gemini 2.0 (Flash, Pro, Flash-8B) via secure proxy
 - Open Library API for book metadata
 - Grounded search with web integration
 
@@ -220,6 +285,7 @@ Real-time performance dashboard with:
 - Vite 6.2 for blazing-fast builds
 - ESM-based architecture
 - Hot module replacement (HMR)
+- Concurrently for running server + client
 - Vitest for unit testing (38 tests)
 - TypeScript type checking
 
@@ -227,6 +293,8 @@ Real-time performance dashboard with:
 
 ```
 new-lit-engine/
+├── server/                 # Backend API server (Express)
+│   └── index.js           # Secure API proxy for Gemini
 ├── public/                 # Static assets and journey data
 │   ├── initial-graph.json
 │   ├── journey-*.json      # Pre-curated literary journeys
@@ -252,6 +320,8 @@ new-lit-engine/
 │   ├── performance.ts     # Performance monitoring
 │   ├── clustering.ts      # Graph clustering algorithms
 │   └── readingProgress.ts # Reading progress tracking
+├── types/                  # TypeScript type definitions
+│   └── index.ts           # Centralized type definitions
 ├── App.tsx                # Main application component
 ├── GraphViz.tsx           # 3D graph visualization
 ├── BookGridViz.tsx        # Book grid recommendation wall
