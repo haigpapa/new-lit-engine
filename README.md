@@ -51,7 +51,12 @@ Pre-built thematic explorations:
 - Physics-based 3D navigation with intuitive controls
 - Node filtering by type (books, authors, themes)
 - Visual connection paths with animated highlights
-- Responsive design for desktop and tablet
+- Comprehensive keyboard shortcuts for power users
+- Export & share graphs (JSON, clipboard, native share)
+- Node search with real-time filtering
+- Fully responsive design (desktop, tablet, mobile)
+- Loading skeletons for better UX
+- Touch-optimized interface for mobile devices
 
 ---
 
@@ -112,11 +117,31 @@ npm run preview
 
 ### Advanced Features
 
+#### Keyboard Shortcuts ⌨️
+
+| Key | Action |
+|-----|--------|
+| `/` | Focus search input |
+| `Esc` | Close panels / Clear selection / Blur input |
+| `?` or `h` | Show help panel |
+| `d` | Show details panel (when node selected) |
+| `f` | Show filters panel |
+| `n` | Show nodes panel |
+| `r` | Reset camera view |
+| `j` | Toggle journey suggestions |
+| `←` `→` `↑` `↓` | Navigate between connected nodes |
+
 #### Find Connections
 1. Click the "Connect" button in the toolbar
 2. Select a starting node
 3. Select an ending node
 4. Watch as the AI finds and highlights a meaningful path between them
+
+#### Export & Share 📤
+- **Download JSON**: Export your entire graph for backup or sharing
+- **Copy to Clipboard**: Quick copy of graph data
+- **Native Share**: Use device share menu (mobile-friendly)
+- **Generate Summary**: Create readable text summaries of your graph
 
 #### Book Grid Mode
 1. Toggle to Grid Mode from the toolbar
@@ -138,7 +163,7 @@ npm run preview
 
 **Frontend Framework**
 - React 19.1.0 with hooks-based architecture
-- TypeScript/JavaScript hybrid
+- TypeScript 5.8.2 (100% migration complete)
 
 **3D Graphics**
 - Three.js 0.176.0 for 3D rendering
@@ -159,6 +184,8 @@ npm run preview
 - Vite 6.2 for blazing-fast builds
 - ESM-based architecture
 - Hot module replacement (HMR)
+- Vitest for unit testing (38 tests)
+- TypeScript type checking
 
 ### Project Structure
 
@@ -168,20 +195,31 @@ new-lit-engine/
 │   ├── initial-graph.json
 │   ├── journey-*.json      # Pre-curated literary journeys
 │   └── meta.json
-├── src/
-│   ├── App.jsx            # Main application component
-│   ├── GraphViz.jsx       # 3D graph visualization
-│   ├── BookGridViz.jsx    # Book grid recommendation wall
-│   ├── LiteraryNode.jsx   # Individual node renderer
-│   ├── SidePanel.jsx      # Details panel
-│   ├── TopLeftToolbar.jsx # Main toolbar
-│   ├── Intro.jsx          # Loading screen
-│   ├── store.js           # Zustand state management
-│   ├── actions.js         # State actions and business logic
-│   ├── llm.js             # AI model integration
-│   ├── libraryApi.js      # Open Library API client
-│   ├── prompts.js         # AI prompt engineering
-│   └── index.css          # Global styles
+├── components/             # Reusable components
+│   ├── GraphLoadingSkeleton.tsx
+│   └── BookGridSkeleton.tsx
+├── hooks/                  # Custom React hooks
+│   └── useKeyboardShortcuts.ts
+├── utils/                  # Utility functions
+│   ├── export.ts          # Export & share utilities
+│   ├── cache.ts           # Caching layer
+│   ├── rateLimiter.ts     # API rate limiting
+│   └── validation.ts      # Input validation
+├── App.tsx                # Main application component
+├── GraphViz.tsx           # 3D graph visualization
+├── BookGridViz.tsx        # Book grid recommendation wall
+├── LiteraryNode.tsx       # Individual node renderer
+├── SidePanel.tsx          # Details panel
+├── TopLeftToolbar.tsx     # Main toolbar
+├── Intro.tsx              # Loading screen
+├── ErrorBoundary.tsx      # Error handling
+├── store.ts               # Zustand state management
+├── actions.ts             # State actions and business logic
+├── llm.ts                 # AI model integration
+├── libraryApi.ts          # Open Library API client
+├── prompts.ts             # AI prompt engineering
+├── types.ts               # TypeScript type definitions
+└── index.css              # Global styles
 ├── vite.config.ts         # Vite configuration
 ├── tsconfig.json          # TypeScript configuration
 └── package.json           # Dependencies and scripts
@@ -278,9 +316,9 @@ In `GraphViz.jsx`, tune the force-directed layout parameters:
 
 ### Known Limitations
 
-- **Large Graphs**: Performance may degrade beyond 200+ nodes (consider filtering)
-- **Mobile Support**: Touch controls work but experience is optimized for desktop
+- **Large Graphs**: Performance may degrade beyond 200+ nodes (use filtering and search)
 - **API Quotas**: Gemini has rate limits; heavy use may require paid tier
+- **3D on Older Devices**: Requires WebGL 2.0 support
 
 ---
 
@@ -311,20 +349,33 @@ In `GraphViz.jsx`, tune the force-directed layout parameters:
 
 ## 🗺️ Roadmap
 
-### Current Phase: MVP & Polish ✅
+### Phase 1: MVP & Core Features ✅
 - [x] Core 3D graph visualization
 - [x] AI-powered search and expansion
 - [x] Open Library integration
 - [x] Journey mode
 - [x] Book grid recommendations
 
-### Next Phase: Stability & Enhancement 🚧
-- [ ] Comprehensive error handling
-- [ ] Loading states and skeletons
-- [ ] TypeScript migration (complete)
-- [ ] Unit and E2E testing
-- [ ] Performance monitoring
-- [ ] Mobile responsiveness improvements
+### Phase 2: TypeScript & Testing ✅
+- [x] Complete TypeScript migration (100% coverage)
+- [x] Unit testing with Vitest (38 tests)
+- [x] Type-safe API integrations
+- [x] Error boundary implementation
+
+### Phase 3: UX Polish ✅
+- [x] Keyboard shortcuts for all major actions
+- [x] Node search with real-time filtering
+- [x] Export & share functionality (JSON, clipboard, native share)
+- [x] Loading skeletons for graph and book grid
+- [x] Comprehensive mobile responsiveness
+- [x] Touch-optimized interface
+
+### Next Phase: Advanced Features 🚧
+- [ ] Data persistence (localStorage)
+- [ ] Import graphs from JSON
+- [ ] User preferences/settings panel
+- [ ] Advanced filtering options
+- [ ] Graph analytics and statistics
 
 ### Future Features 🔮
 - [ ] User accounts and saved explorations
@@ -361,12 +412,12 @@ Contributions are welcome! This project is in active development.
 
 ### Areas Needing Help
 
-- TypeScript type definitions
-- Test coverage
-- Mobile UX improvements
-- Accessibility enhancements
-- Documentation and tutorials
-- Performance optimization
+- Accessibility enhancements (ARIA labels, screen readers)
+- Additional test coverage (integration and E2E tests)
+- Performance optimization for very large graphs
+- Additional journey themes
+- Documentation and video tutorials
+- Internationalization (i18n)
 
 ---
 

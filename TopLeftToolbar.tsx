@@ -5,6 +5,7 @@
 import { useState } from "react";
 import c from "clsx";
 import useStore from "./store";
+import SettingsPanel from "./components/SettingsPanel";
 import {
     setActivePanel,
     toggleConnectionMode,
@@ -15,6 +16,7 @@ import {
 
 const TopLeftToolbar: React.FC = () => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
 
     const activePanel = useStore(s => s.activePanel);
     const selectedNode = useStore(s => s.selectedNode);
@@ -25,21 +27,29 @@ const TopLeftToolbar: React.FC = () => {
     const isGraphMode = visualizationMode === 'graph';
 
     return (
-        <aside className="top-left-toolbar">
-            <button
-                className="toolbar-button toolbar-logo"
-                title="About Storylines"
-                onClick={() => setActivePanel('help')}
-            >
-                <span className="icon">public</span>
-            </button>
-            <button
-                className={c("toolbar-button", { active: !isGraphMode })}
-                title={isGraphMode ? "Switch to Book Grid View" : "Switch to Graph View"}
-                onClick={toggleVisualizationMode}
-            >
-                <span className="icon">grid_view</span>
-            </button>
+        <>
+            <aside className="top-left-toolbar">
+                <button
+                    className="toolbar-button toolbar-logo"
+                    title="About Storylines"
+                    onClick={() => setActivePanel('help')}
+                >
+                    <span className="icon">public</span>
+                </button>
+                <button
+                    className={c("toolbar-button", { active: showSettings })}
+                    title="Settings"
+                    onClick={() => setShowSettings(prev => !prev)}
+                >
+                    <span className="icon">settings</span>
+                </button>
+                <button
+                    className={c("toolbar-button", { active: !isGraphMode })}
+                    title={isGraphMode ? "Switch to Book Grid View" : "Switch to Graph View"}
+                    onClick={toggleVisualizationMode}
+                >
+                    <span className="icon">grid_view</span>
+                </button>
             <button
                 className={c("toolbar-button", { active: isExpanded })}
                 title={isExpanded ? "Collapse actions" : "Expand actions"}
@@ -99,6 +109,17 @@ const TopLeftToolbar: React.FC = () => {
                 </button>
             </div>
         </aside>
+
+        {showSettings && (
+            <>
+                <div
+                    className="settings-overlay"
+                    onClick={() => setShowSettings(false)}
+                />
+                <SettingsPanel onClose={() => setShowSettings(false)} />
+            </>
+        )}
+        </>
     );
 };
 
