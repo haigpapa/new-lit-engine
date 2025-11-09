@@ -8,6 +8,9 @@ import useStore from "./store";
 import SettingsPanel from "./components/SettingsPanel";
 import AnalyticsPanel from "./components/AnalyticsPanel";
 import PerformanceDashboard from "./components/PerformanceDashboard";
+import AdvancedFiltersPanel from "./components/AdvancedFiltersPanel";
+import AdvancedSearchPanel from "./components/AdvancedSearchPanel";
+import ReadingProgressPanel from "./components/ReadingProgressPanel";
 import {
     setActivePanel,
     toggleConnectionMode,
@@ -21,6 +24,9 @@ const TopLeftToolbar: React.FC = () => {
     const [showSettings, setShowSettings] = useState(false);
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [showPerformance, setShowPerformance] = useState(false);
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+    const [showReadingProgress, setShowReadingProgress] = useState(false);
 
     const activePanel = useStore(s => s.activePanel);
     const selectedNode = useStore(s => s.selectedNode);
@@ -87,11 +93,32 @@ const TopLeftToolbar: React.FC = () => {
                     <span className="icon">filter_alt</span>
                 </button>
                 <button
+                    title="Advanced Filters"
+                    onClick={() => setShowAdvancedFilters(prev => !prev)}
+                    className={c('toolbar-button', { active: showAdvancedFilters })}
+                >
+                    <span className="icon">filter_list</span>
+                </button>
+                <button
                     title="Graph Nodes"
                     onClick={() => setActivePanel('nodes')}
                     className={c('toolbar-button', { active: activePanel === 'nodes' })}
                 >
                     <span className="icon">list</span>
+                </button>
+                <button
+                    title="Advanced Search"
+                    onClick={() => setShowAdvancedSearch(prev => !prev)}
+                    className={c('toolbar-button', { active: showAdvancedSearch })}
+                >
+                    <span className="icon">travel_explore</span>
+                </button>
+                <button
+                    title="Reading Progress"
+                    onClick={() => setShowReadingProgress(prev => !prev)}
+                    className={c('toolbar-button', { active: showReadingProgress })}
+                >
+                    <span className="icon">auto_stories</span>
                 </button>
 
                  {/* Action Tools */}
@@ -145,6 +172,41 @@ const TopLeftToolbar: React.FC = () => {
                     onClick={() => setShowAnalytics(false)}
                 />
                 <AnalyticsPanel onClose={() => setShowAnalytics(false)} />
+            </>
+        )}
+
+        {showAdvancedFilters && (
+            <>
+                <div
+                    className="settings-overlay"
+                    onClick={() => setShowAdvancedFilters(false)}
+                />
+                <AdvancedFiltersPanel
+                    onClose={() => setShowAdvancedFilters(false)}
+                    onApplyFilter={(filterId) => {
+                        console.log('Applied filter:', filterId);
+                    }}
+                />
+            </>
+        )}
+
+        {showAdvancedSearch && (
+            <>
+                <div
+                    className="settings-overlay"
+                    onClick={() => setShowAdvancedSearch(false)}
+                />
+                <AdvancedSearchPanel onClose={() => setShowAdvancedSearch(false)} />
+            </>
+        )}
+
+        {showReadingProgress && (
+            <>
+                <div
+                    className="settings-overlay"
+                    onClick={() => setShowReadingProgress(false)}
+                />
+                <ReadingProgressPanel onClose={() => setShowReadingProgress(false)} />
             </>
         )}
 
