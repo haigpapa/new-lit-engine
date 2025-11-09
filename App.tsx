@@ -10,6 +10,7 @@ import useStore from "./store";
 import SidePanel from "./SidePanel";
 import TopLeftToolbar from "./TopLeftToolbar";
 import Intro from "./Intro";
+import GraphLoadingSkeleton from "./components/GraphLoadingSkeleton";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 import {
@@ -141,6 +142,7 @@ export default function App() {
   const visualizationMode = useStore(s => s.visualizationMode);
   const isGridLoading = useStore(s => s.bookGrid.isLoading);
   const isTimelineActive = useStore(s => s.isTimelineActive);
+  const nodes = useStore(s => s.nodes);
 
 
   const [value, setValue] = useState("");
@@ -171,12 +173,20 @@ export default function App() {
 
   const isGraphMode = visualizationMode === 'graph';
   const showTimeline = isGraphMode && isTimelineActive;
+  const showGraphSkeleton = isGraphMode && isFetching && Object.keys(nodes).length < 3;
 
   return (
     <main className="app-loaded">
       <TopLeftToolbar />
 
-      {isGraphMode ? <GraphViz /> : <BookGridViz />}
+      {isGraphMode ? (
+        <>
+          <GraphViz />
+          {showGraphSkeleton && <GraphLoadingSkeleton />}
+        </>
+      ) : (
+        <BookGridViz />
+      )}
 
       <div
         className={c('panel-overlay', { active: activePanel })}

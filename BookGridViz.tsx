@@ -6,6 +6,7 @@ import React from 'react';
 import c from 'clsx';
 import useStore from './store';
 import BookGridNode from './BookGridNode';
+import BookGridSkeleton from './components/BookGridSkeleton';
 
 const BookGridViz: React.FC = () => {
     const slots = useStore(state => state.bookGrid.slots);
@@ -26,17 +27,17 @@ const BookGridViz: React.FC = () => {
 
     return (
         <div className="book-grid-container">
-            {isLoading && (
-                 <div className="grid-loader">
-                    <img src="https://storage.googleapis.com/experiments-uploads/g2demos/photo-applet/spinner.svg" alt="Loading..." />
-                    <p>Discovering new books for you...</p>
-                 </div>
+            {isLoading ? (
+                <div className="grid-loading-overlay">
+                    <BookGridSkeleton />
+                </div>
+            ) : (
+                <div className="grid">
+                    {slots.map(slot => (
+                        <BookGridNode key={slot.index} slot={slot} />
+                    ))}
+                </div>
             )}
-            <div className={c("grid", { loading: isLoading })}>
-                {slots.map(slot => (
-                    <BookGridNode key={slot.index} slot={slot} />
-                ))}
-            </div>
         </div>
     );
 };
