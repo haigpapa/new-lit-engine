@@ -168,10 +168,6 @@ export default function App() {
     return (
         <main>
             <Intro />
-            {/* Render GraphViz in background so physics can init, but keep it hidden */}
-            <div style={{ opacity: 0, pointerEvents: 'none' }}>
-              <GraphViz />
-            </div>
         </main>
     );
   }
