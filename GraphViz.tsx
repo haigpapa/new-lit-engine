@@ -112,11 +112,20 @@ function SceneContent() {
     livePositionsRef.current = {};
   }, [nodes]);
 
+  useEffect(() => {
+    const nodeCount = Object.keys(nodes).length;
+    if (nodeCount > 0) {
+      console.log('[STORYLINES SceneContent] Nodes to render:', nodeCount);
+      const firstNode = Object.values(nodes)[0];
+      console.log('[STORYLINES SceneContent] First node position:', firstNode?.position);
+    }
+  }, [nodes]);
+
   const {camera} = useThree()
   const controlsRef = useRef<any>(null)
 
   const visibleNodes = useMemo(() => {
-    return Object.values(nodes).filter(node => {
+    const filtered = Object.values(nodes).filter(node => {
         if (!nodeFilters[node.type]) {
             return false;
         }
@@ -126,6 +135,8 @@ function SceneContent() {
         }
         return true;
     });
+    console.log('[STORYLINES SceneContent] visibleNodes:', filtered.length, 'of', Object.keys(nodes).length);
+    return filtered;
   }, [nodes, nodeFilters, isTimelineActive, timelineRange]);
 
   const visibleNodeIds = useMemo(() => new Set(visibleNodes.map(n => n.id)), [visibleNodes]);
@@ -264,11 +275,21 @@ function SceneContent() {
   const selectedNodePosition = selectedNodeData ? selectedNodeData.position : undefined;
 
 
+  useEffect(() => {
+    console.log('[STORYLINES SceneContent] Camera position:', camera.position.toArray());
+  }, [camera]);
+
   return (
     <>
       <ambientLight intensity={1.5} />
       <pointLight position={[100, 100, 100]} intensity={0.5} />
       <pointLight position={[-100, -100, -100]} intensity={0.3} />
+
+      {/* Debug: Test sphere at origin */}
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[2, 32, 32]} />
+        <meshStandardMaterial color="red" />
+      </mesh>
 
       <TrackballControls
         ref={controlsRef}
