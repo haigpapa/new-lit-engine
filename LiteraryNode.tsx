@@ -190,6 +190,8 @@ const LiteraryNode = forwardRef<RapierRigidBody, LiteraryNodeProps>(({
   selectedNodePosition,
   livePositionsRef
 }, ref) => {
+  console.log('[STORYLINES LiteraryNode] Rendering node:', label, 'at position:', position);
+
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const groupRef = useRef<THREE.Group>(null);
 
