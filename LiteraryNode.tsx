@@ -203,17 +203,15 @@ const LiteraryNode = forwardRef<RapierRigidBody, LiteraryNodeProps>(({
   const finalPos = useMemo(() => new THREE.Vector3(...position), [position]);
   const isNeighbor = selectionActive && !highlight && !dim;
 
-  // New useEffect to manage body type imperatively, preventing component remounts.
-  useEffect(() => {
-    if (!rigidBodyRef.current) return;
-
-    const isKinematic = highlight || isAnimatingIn || isNeighbor;
-
-    rigidBodyRef.current.setBodyType(
-      isKinematic ? 1 as any : 0 as any,
-      true // Wake the body up after changing its type
-    );
-  }, [highlight, isAnimatingIn, isNeighbor]);
+  // Temporarily disabled physics body type management
+  // useEffect(() => {
+  //   if (!rigidBodyRef.current) return;
+  //   const isKinematic = highlight || isAnimatingIn || isNeighbor;
+  //   rigidBodyRef.current.setBodyType(
+  //     isKinematic ? 1 as any : 0 as any,
+  //     true // Wake the body up after changing its type
+  //   );
+  // }, [highlight, isAnimatingIn, isNeighbor]);
 
   // Create deterministic, unique orbital parameters for each node to de-synchronize their animations.
   const orbitParams = useMemo(() => {
@@ -248,47 +246,15 @@ const LiteraryNode = forwardRef<RapierRigidBody, LiteraryNodeProps>(({
 
 
   useFrame((state, delta) => {
-    if (!rigidBodyRef.current) return;
-    const currentPos = rigidBodyRef.current.translation();
-
+    // Temporarily disabled physics - using simplified rendering
     // Update live position for edge rendering
-    if (livePositionsRef && livePositionsRef.current) {
+    if (livePositionsRef && livePositionsRef.current && groupRef.current) {
       if (!livePositionsRef.current[id]) {
         livePositionsRef.current[id] = new THREE.Vector3();
       }
-      livePositionsRef.current[id].set(currentPos.x, currentPos.y, currentPos.z);
-    }
-
-    // Animate position for new nodes
-    if (isAnimatingIn) {
-      currentVec.set(currentPos.x, currentPos.y, currentPos.z);
-
-      if (currentVec.distanceTo(finalPos) < 0.1) {
-        rigidBodyRef.current.setTranslation(finalPos, true);
-        setIsAnimatingIn(false);
-      } else {
-        const newPos = newPosVec.lerpVectors(currentVec, finalPos, delta * 5);
-        rigidBodyRef.current.setTranslation(newPos, true);
-      }
-    }
-
-    // Orbital animation for neighbors
-    if (isNeighbor && selectedNodePosition) {
-        centerPosVec.set(...selectedNodePosition);
-
-        // The node's "at rest" position relative to the center. Using this stable vector prevents drift.
-        initialRelativePosVec.copy(finalPos).sub(centerPosVec);
-
-        const orbitSpeed = 0.3; // Radians per second
-
-        // Calculate the total rotation based on elapsed time for a smooth, continuous animation
-        const rotationAngle = state.clock.elapsedTime * orbitSpeed + orbitParams.phase;
-
-        // Apply the unique, deterministic rotation
-        rotatedPosVec.copy(initialRelativePosVec).applyAxisAngle(orbitParams.axis, rotationAngle);
-
-        const newPos = newPosVec.copy(centerPosVec).add(rotatedPosVec);
-        rigidBodyRef.current.setNextKinematicTranslation(newPos);
+      const worldPos = new THREE.Vector3();
+      groupRef.current.getWorldPosition(worldPos);
+      livePositionsRef.current[id].copy(worldPos);
     }
 
     // Animate scale for node state changes
@@ -525,47 +491,40 @@ const LiteraryNode = forwardRef<RapierRigidBody, LiteraryNodeProps>(({
     }
   };
 
+  // Temporarily removed RigidBody to fix rendering issue - using simple group instead
   return (
-    <RigidBody
-      ref={rigidBodyRef}
-      position={isNewNode ? initialPosition : position}
-      linearDamping={4}
-      angularDamping={1}
-      colliders={false}
+    <group
+      position={position}
+      ref={groupRef}
+      scale={isNewNode ? 0.01 : 1}
+      onPointerEnter={() => (document.body.style.cursor = 'pointer')}
+      onPointerLeave={() => (document.body.style.cursor = 'auto')}
+      onClick={(e: ThreeEvent<MouseEvent>) => {
+        e.stopPropagation();
+        setSelectedNode(id);
+      }}
     >
-      <BallCollider args={[effectiveSize]} />
-      <group
-        ref={groupRef}
-        scale={isNewNode ? 0.01 : 1}
-        onPointerEnter={() => (document.body.style.cursor = 'pointer')}
-        onPointerLeave={() => (document.body.style.cursor = 'auto')}
-        onClick={(e: ThreeEvent<MouseEvent>) => {
-          e.stopPropagation();
-          setSelectedNode(id);
-        }}
-      >
-        {renderNodeShape()}
+      {renderNodeShape()}
 
-        {/* Label for all nodes */}
-        <Billboard>
-          <Text
-            font="https://storage.googleapis.com/experiments-uploads/g2demos/photo-applet/google-sans.ttf"
-            fontSize={0.3}
-            color="white"
-            anchorX="center"
-            anchorY="top"
-            position={[0, labelOffset, 0]}
-            maxWidth={3}
-            textAlign="center"
-            fillOpacity={type === 'theme' ? 1.0 : (highlight || isInPath ? 1 : 0)}
-            outlineColor="#111"
-            outlineWidth={0.02}
-          >
-            {label}
-          </Text>
-        </Billboard>
-      </group>
-    </RigidBody>
+      {/* Label for all nodes */}
+      <Billboard>
+        <Text
+          font="https://storage.googleapis.com/experiments-uploads/g2demos/photo-applet/google-sans.ttf"
+          fontSize={0.3}
+          color="white"
+          anchorX="center"
+          anchorY="top"
+          position={[0, labelOffset, 0]}
+          maxWidth={3}
+          textAlign="center"
+          fillOpacity={type === 'theme' ? 1.0 : (highlight || isInPath ? 1 : 0)}
+          outlineColor="#111"
+          outlineWidth={0.02}
+        >
+          {label}
+        </Text>
+      </Billboard>
+    </group>
   );
 });
 

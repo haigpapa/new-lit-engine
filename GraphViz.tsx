@@ -297,7 +297,8 @@ function SceneContent() {
         maxDistance={100}
         noPan
       />
-      <Physics gravity={[0, 0, 0]}>
+      {/* Temporarily disabled Physics to fix rendering issue */}
+      {/* <Physics gravity={[0, 0, 0]}> */}
         <Suspense fallback={null}>
             {visibleNodes.map(node => {
             const isConnected = selectedNode && edges.some(edge =>
@@ -389,7 +390,7 @@ function SceneContent() {
             />
           )
         })}
-      </Physics>
+      {/* </Physics> */}
     </>
   )
 }
