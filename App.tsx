@@ -27,11 +27,11 @@ import {
 
 const JourneySuggestions: React.FC = () => (
     <div className="journey-suggestions">
-      <button onClick={() => startJourney('Magical Realism')}>Magical Realism</button>
-      <button onClick={() => startJourney('Experimental Fiction')}>Experimental Fiction</button>
-      <button onClick={() => startJourney('Autofiction')}>Autofiction</button>
+      <button onClick={() => startJourney('Cyberpunk')}>Magical Realism</button>
+      <button onClick={() => startJourney('Existentialism')}>Experimental Fiction</button>
+      <button onClick={() => startJourney('Gothic')}>Autofiction</button>
       <button onClick={() => startJourney('Mythology')}>Mythology</button>
-      <button onClick={() => startJourney('The Beat Generation')}>The Beat Generation</button>
+      <button onClick={() => startJourney('Beat')}>The Beat Generation</button>
     </div>
   );
 
