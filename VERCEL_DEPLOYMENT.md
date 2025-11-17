@@ -39,13 +39,18 @@ Visit your deployed URL and check:
 
 ### Architecture
 
-The application uses a **unified Express.js backend** that handles both API requests and static file serving:
+The application uses a **hybrid architecture** optimized for Vercel:
 
-- **All requests** are routed through `server/index.js` via `vercel.json` configuration
-- **API endpoints** are handled by Express middleware in the server
-- **Static files** (frontend) are served from the `/dist` directory
+- **Static frontend** is served directly by Vercel's CDN from the `dist` directory
+- **API requests** (`/api/*`) are routed to the Express server running as a serverless function
+- **Client-side routing** falls back to `/index.html` for React SPA functionality
 
-This architecture ensures that **all security features** (rate limiting, Helmet headers, proper CORS) are active on Vercel deployments.
+**On Vercel specifically:**
+- The Express server (`server/index.js`) runs as a **serverless function** (not a persistent server)
+- Static files (HTML, CSS, JS) are served by Vercel's global CDN (not by Express)
+- The `rewrites` configuration in `vercel.json` routes API traffic to the serverless function
+
+This architecture ensures that **all security features** (rate limiting, Helmet headers, proper CORS) are active on Vercel deployments while leveraging Vercel's CDN for optimal frontend performance.
 
 ### API Routes
 
@@ -80,9 +85,10 @@ The client automatically detects the environment:
 ### Deployment Configuration
 
 The `vercel.json` file configures Vercel to:
-1. Build the frontend using `npm run build`
-2. Deploy the Express server from `server/index.js` using `@vercel/node`
-3. Route **all requests** (`/(.*))`) to the server
+1. Build the frontend using `npm run build` (outputs to `dist` folder)
+2. Deploy the Express server from `server/index.js` as a serverless function using `@vercel/node`
+3. Rewrite API requests (`/api/*`) to the server
+4. Serve all other requests from the static frontend (`/index.html`)
 
 ```json
 {
@@ -92,7 +98,8 @@ The `vercel.json` file configures Vercel to:
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildCommand": "npm run build"
+        "buildCommand": "npm run build",
+        "distDir": "dist"
       }
     },
     {
@@ -100,14 +107,24 @@ The `vercel.json` file configures Vercel to:
       "use": "@vercel/node"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "server/index.js"
+      "source": "/api/(.*)",
+      "destination": "/server/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
 ```
+
+**Key Points:**
+- `rewrites` (not `routes`) ensures the frontend loads correctly
+- First rewrite: API calls (`/api/*`) → Express serverless function
+- Second rewrite: Everything else (`/*`) → React SPA (`/index.html`)
+- This allows client-side routing to work properly
 
 ---
 
